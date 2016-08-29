@@ -2,13 +2,11 @@
 
 set -e
 
+
+
 echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/00-expose-hidraw.rules
 
 echo 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"' > /etc/udev/rules.d/00-expose-uhid.rules
-
-/bin/udevadm trigger
-
-> /dev/uhid
 
 test ! -e /etc/rc.local || /bin/mv /etc/rc.local{,.backup."$(/bin/date +%Y%m%d%H%M%S)"}
 
@@ -17,3 +15,11 @@ echo '#!/bin/bash
 exit 0' > /etc/rc.local
 
 /bin/chmod +x /etc/rc.local
+
+
+
+/bin/udevadm trigger
+
+> /dev/uhid
+
+( /bin/sleep 2; /bin/chmod 0666 /dev/uhid ) &
