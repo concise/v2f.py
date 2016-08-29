@@ -2,46 +2,41 @@
 
 set -e
 
+# you should be root in order to do these dangerous things
 test "$(id -u)" = 0
 
-if [[ 1 = $(grep '^c! /dev/uhid 0600 ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
-  #
-  # Originally /dev/uhid is only readable/writable by root, but we want v2f.py
-  # process (usually executed with user id != 0) to access it in order to create
-  # HID devices.  To achieve that, we can just make /dev/uhid universally
-  # readable and universally writable.  For some obvious reason, it is less
-  # secure.  Yet it works.
-  #
-  # /run/tmpfiles.d/kmod.conf should contain a line like this
-  #
-  #     c! /dev/uhid 0600 - - - 10:239
-  #
-  # Let us create a new file /etc/tmpfiles.d/expose-uhid.conf containing
-  #
-  #     c! /dev/uhid 0666 - - - 10:239
-  #
-  grep '^c! /dev/uhid 0600 ' /run/tmpfiles.d/kmod.conf | sed s/0600/0666/ > /etc/tmpfiles.d/expose-uhid.conf
-  > /dev/uhid
-  ( sleep 1; chmod 0666 /dev/uhid ) &
-fi
+# we want to have 0666 permission on all /dev/hidrawN devices automatically
+echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/99-hidrawN666.rules
 
-if [[ ! -f /etc/udev/rules.d/99-expose-all-hidraw.rules ]]; then
-  #
-  # When you plug in a Yubico U2F security key, a corresponding hidraw device
-  # node is created, and it is usually named named like "/dev/hidraw0".  When
-  # you use /dev/uhid ABI to create a new HID device, same thing happens.  I
-  # don't know exactly how Google Chrome interacts with U2F devices yet, but I
-  # do know that if I make the hidraw device node corresponding to the virtual
-  # HID created by v2f.py universally readable and universally writable, Google
-  # Chrome will be able to interact with it too.
-  #
-  # Sadly I don't know a good way to automatically `chmod 0666 /dev/hidrawN`
-  # whenever I use v2f.py to create a new U2F HID device.
-  #
-  # Therefore, here is a quick hack which makes all hidraw device nodes
-  # universally readable and universally writable.  For some obvious reason, it
-  # is less secure.  Yet it works.
-  #
-  echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/99-expose-all-hidraw.rules
-  udevadm trigger
-fi
+# let the new rule takes effect now
+udevadm trigger
+
+# we want to have 0666 permission on /dev/uhid
+( > /dev/uhid ; sleep 1 ; chmod 0666 /dev/uhid ) &
+
+# we want to have 0666 permission on /dev/uhid even after rebooting
+echo '#!/bin/bash
+### BEGIN INIT INFO
+# Provides: uhid666
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2
+# Default-Stop:
+### END INIT INFO
+case "$1" in
+    start)
+        > /dev/uhid
+        /bin/sleep 1
+        /bin/chmod 0666 /dev/uhid
+        exit 0
+        ;;
+    stop)
+        exit 0
+        ;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac' > /etc/init.d/uhid666
+chmod +x /etc/init.d/uhid666
+update-rc.d uhid666 start 99 2 .
