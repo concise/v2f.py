@@ -7,9 +7,9 @@ test "$(id -u)" = 0
 if [[ 1 = $(grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
   #
   # Originally /dev/uhid is only readable/writable by root, but we want v2f.py
-  # process (usually executed with user id != 0) to access it in order to
-  # create HID devices.  To achieve that, we can just make /dev/uhid globally
-  # readable and globally writable.  For some obvious reason, it is less
+  # process (usually executed with user id != 0) to access it in order to create
+  # HID devices.  To achieve that, we can just make /dev/uhid universally
+  # readable and universally writable.  For some obvious reason, it is less
   # secure.  Yet it works.
   #
   # /run/tmpfiles.d/kmod.conf should contain a line like this
@@ -33,15 +33,15 @@ if [[ ! -f /etc/udev/rules.d/99-expose-all-hidraw.rules ]]; then
   # you use /dev/uhid ABI to create a new HID device, same thing happens.  I
   # don't know exactly how Google Chrome interacts with U2F devices yet, but I
   # do know that if I make the hidraw device node corresponding to the virtual
-  # HID created by v2f.py globally readable and globally writable, Google
+  # HID created by v2f.py universally readable and universally writable, Google
   # Chrome will be able to interact with it too.
   #
   # Sadly I don't know a good way to automatically `chmod 0666 /dev/hidrawN`
   # whenever I use v2f.py to create a new U2F HID device.
   #
   # Therefore, here is a quick hack which makes all hidraw device nodes
-  # globally readable and globally writable.  For some obvious reason, it is
-  # less secure.  Yet it works.
+  # universally readable and universally writable.  For some obvious reason, it
+  # is less secure.  Yet it works.
   #
   echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/99-expose-all-hidraw.rules
   udevadm trigger
