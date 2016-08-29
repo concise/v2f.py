@@ -23,7 +23,7 @@ hidraw.  An easy way to do that is just making `/dev/uhid` and `/dev/hidraw*`
 device nodes universally read-writable
 
 ```bash
-sudo bash linuxhack
+sudo bash hack-linux-for-v2f
 ```
 
 
