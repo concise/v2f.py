@@ -12,8 +12,15 @@ if [[ 1 = $(grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
   # readable and globally writable.  For some obvious reason, it is less
   # secure.  Yet it works.
   #
-  cp /run/tmpfiles.d/kmod.conf{,.backup."$(date +%Y%m%d.%H%M%S)"}
-  sed -i 's@\(.* /dev/uhid \)0600\(.*\)@\10666\2@' /run/tmpfiles.d/kmod.conf
+  # /run/tmpfiles.d/kmod.conf should contain a line like this
+  #
+  #     c! /dev/uhid 0600 - - - 10:239
+  #
+  # Let us create a new file /etc/tmpfiles.d/expose-uhid.conf containing
+  #
+  #     c! /dev/uhid 0666 - - - 10:239
+  #
+  grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | sed 's@\(.* /dev/uhid \)0600\(.*\)@\10666\2@' > /etc/tmpfiles.d/expose-uhid.conf
 fi
 
 if [[ ! -f /etc/udev/rules.d/99-expose-all-hidraw.rules ]]; then
