@@ -10,7 +10,7 @@ tested the code in a 64-bit Ubuntu 16.04 desktop environment with Google Chrome.
 
 # v2f.py is a virtual U2F device
 
-To clone this source code repository
+Clone this source code repository
 
 ```bash
 git clone https://github.com/concise/v2f.py
@@ -18,22 +18,24 @@ cd v2f.py
 ```
 
 
-To run v2f (default: store everything under ~/.v2f directory)
+Tweak permissions of some files before running v2f, which needs uhid and
+hidraw.  An easy way to do that is just making `/dev/uhid` and `/dev/hidraw*`
+device nodes universally read-writable
+
+```bash
+sudo bash linuxhack
+```
+
+
+Run v2f (default: store everything under ~/.v2f directory)
 
 ```bash
 python3 v2f.py
 ```
 
 
-To run v2f with a specified device information directory
+Run v2f with a specified device information directory
 
 ```bash
 python3 v2f.py ~/.my-v2f-info-dir
 ```
-
-
-
-### You may need to tweak permissions of some files before running v2f.py
-
-You can achieve that by running the `linuxhack` bash script, which makes
-`/dev/uhid` and `/dev/hidraw*` device nodes universally read-writable.
