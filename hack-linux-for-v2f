@@ -2,49 +2,18 @@
 
 set -e
 
-# you should be root in order to do these dangerous things
-test "$(id -u)" = 0
+echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/00-expose-hidraw.rules
 
-# we want to have 0666 permission on all /dev/hidrawN devices automatically
-echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/99-hidrawN666.rules
+echo 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"' > /etc/udev/rules.d/00-expose-uhid.rules
 
-# let the new rule takes effect now
-udevadm trigger
+/bin/udevadm trigger
 
-# we want to have 0666 permission on /dev/uhid
-( > /dev/uhid ; sleep 1 ; chmod 0666 /dev/uhid ) &
+test ! -e /etc/rc.local || /bin/mv /etc/rc.local{,.backup."$(/bin/date +%Y%m%d%H%M%S)"}
 
-# we want to have 0666 permission on /dev/uhid even after rebooting
 echo '#!/bin/bash
-### BEGIN INIT INFO
-# Provides: uhid666
-# Required-Start:
-# Required-Stop:
-# Default-Start: 2
-# Default-Stop:
-### END INIT INFO
-case "$1" in
-    start)
-        echo "start  $(date +%Y%m%d.%H%M%S)" >> /var/tmp/log
-        (
-            > /dev/uhid
-            /bin/sleep .5
-            while [[ $(/usr/bin/stat -c%a /dev/uhid) != 666 ]]; do
-                /bin/chmod 0666 /dev/uhid
-                > /dev/uhid
-                /bin/sleep .5
-            done
-        )
-        echo "finish $(date +%Y%m%d.%H%M%S)" >> /var/tmp/log
-        exit 0
-        ;;
-    stop)
-        exit 0
-        ;;
-    *)
-        echo "Usage: $0 start|stop" >&2
-        exit 3
-        ;;
-esac' > /etc/init.d/uhid666
-chmod +x /etc/init.d/uhid666
-update-rc.d uhid666 start 99 2 .
+> /dev/uhid
+exit 0' > /etc/rc.local
+
+/bin/chmod +x /etc/rc.local
+
+> /dev/uhid
