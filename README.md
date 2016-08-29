@@ -1,11 +1,14 @@
-**WARNING:**  This project is still in its pre-alpha stage.  Serious refactoring
-and documentations are needed.
+**WARNING:**
 
-
-# v2f.py is a virtual U2F device
+This project is still in its pre-alpha stage.  Serious refactoring and
+documentations are needed.
 
 Currently v2f.py only supports Linux, because UHID ABI is pretty handy.  I only
 tested the code in a 64-bit Ubuntu 16.04 desktop environment with Google Chrome.
+
+
+
+# v2f.py is a virtual U2F device
 
 To clone this source code repository
 
@@ -32,24 +35,5 @@ python3 v2f.py ~/.my-v2f-info-dir
 
 ### You may need to tweak permissions of some files before running v2f.py
 
-To make `/dev/uhid` universally read-writable, chmod it after opening it at
-least once
-
-```bash
-sudo dd if=/dev/uhid count=0
-sudo chmod 0666 /dev/uhid
-```
-
-
-To make `/dev/uhid` universally read-writable across rebooting
-
-```bash
-sudo tee <<< $'#!/bin/sh -e\n> /dev/uhid\n/bin/chmod 0666 /dev/uhid\nexit 0' /etc/rc.local
-```
-
-
-To make `/dev/hidraw*` devices universally read-writable
-
-```bash
-sudo tee <<< 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' /etc/udev/rules.d/99-hack-hidraw.rules
-```
+You can achieve that by running the `linuxhack` bash script, which makes
+`/dev/uhid` and `/dev/hidraw*` device nodes universally read-writable.
