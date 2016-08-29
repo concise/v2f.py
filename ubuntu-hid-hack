@@ -29,11 +29,14 @@ fi
 printf %s '#!/usr/bin/python3
 import os
 import sys
+import time
 try:
   fd = os.open("/dev/uhid", os.O_RDWR)
   data = bytes.fromhex("0b"+"0"*518+"22"+"0"*38+"06d0f10901a1010920150026ff007508954081020921150026ff00750895409102c0")
   assert 314 == os.write(fd, data)
+  time.sleep(.5)
   os.close(fd)
+  time.sleep(.5)
   os.chmod("/dev/uhid", 0o666)
 except:
   sys.exit(1)
@@ -45,7 +48,9 @@ chmod +x /usr/local/bin/ensure-uhid
 
 mv /etc/rc.local /etc/rc.local.bak."$(date +%Y%m%d.%H%M%S)"
 
+/usr/local/bin/ensure-uhid
+
+# TODO change this uhid hack into a single systemd service without rc.local
 echo '/usr/local/bin/ensure-uhid; exit 0' > /etc/rc.local
 chmod +x /etc/rc.local
-
-/usr/local/bin/ensure-uhid
+systemctl enable rc-local.service
