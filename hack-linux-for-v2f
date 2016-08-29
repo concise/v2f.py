@@ -3,23 +3,33 @@
 set -e
 
 
+#
+# we want 0666 for both /dev/uhid and /dev/hidraw*
+#
 
-echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"' > /etc/udev/rules.d/00-expose-hidraw.rules
+printf %s 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"
+' > /etc/udev/rules.d/00-expose-hidraw.rules
 
-echo 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"' > /etc/udev/rules.d/00-expose-uhid.rules
+printf %s 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"
+' > /etc/udev/rules.d/00-expose-uhid.rules
 
-test ! -e /etc/rc.local || /bin/mv /etc/rc.local{,.backup."$(/bin/date +%Y%m%d%H%M%S)"}
+test ! -e /etc/rc.local ||
+  /bin/mv /etc/rc.local /etc/rc.local.backup."$(/bin/date +%Y%m%d%H%M%S)"
 
-echo '#!/bin/bash
+printf %s '#!/bin/bash
 > /dev/uhid
-exit 0' > /etc/rc.local
+exit 0
+' > /etc/rc.local
 
 /bin/chmod +x /etc/rc.local
 
 
+#
+# make it work without rebooting
+#
 
 /bin/udevadm trigger
 
 > /dev/uhid
 
-( /bin/sleep 2; /bin/chmod 0666 /dev/uhid ) &
+/bin/chmod 0666 /dev/uhid
