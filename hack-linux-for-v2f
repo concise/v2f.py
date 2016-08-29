@@ -4,7 +4,7 @@ set -e
 
 test "$(id -u)" = 0
 
-if [[ 1 = $(grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
+if [[ 1 = $(grep '^c! /dev/uhid 0600 ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
   #
   # Originally /dev/uhid is only readable/writable by root, but we want v2f.py
   # process (usually executed with user id != 0) to access it in order to create
@@ -20,10 +20,9 @@ if [[ 1 = $(grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | wc -l) ]]; then
   #
   #     c! /dev/uhid 0666 - - - 10:239
   #
-  grep ' /dev/uhid ' /run/tmpfiles.d/kmod.conf | sed 's@ 0600 @ 0666 @' > /etc/tmpfiles.d/expose-uhid.conf
+  grep '^c! /dev/uhid 0600 ' /run/tmpfiles.d/kmod.conf | sed s/0600/0666/ > /etc/tmpfiles.d/expose-uhid.conf
   > /dev/uhid
-  sleep .5
-  chmod 0666 /dev/uhid
+  ( sleep 1; chmod 0666 /dev/uhid ) &
 fi
 
 if [[ ! -f /etc/udev/rules.d/99-expose-all-hidraw.rules ]]; then
