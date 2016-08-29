@@ -8,6 +8,8 @@ echo 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"' > /etc/udev/rules.d/00-exp
 
 /bin/udevadm trigger
 
+> /dev/uhid
+
 test ! -e /etc/rc.local || /bin/mv /etc/rc.local{,.backup."$(/bin/date +%Y%m%d%H%M%S)"}
 
 echo '#!/bin/bash
@@ -15,5 +17,3 @@ echo '#!/bin/bash
 exit 0' > /etc/rc.local
 
 /bin/chmod +x /etc/rc.local
-
-> /dev/uhid
