@@ -25,9 +25,17 @@ echo '#!/bin/bash
 ### END INIT INFO
 case "$1" in
     start)
-        > /dev/uhid
-        /bin/sleep 1
-        /bin/chmod 0666 /dev/uhid
+        echo "start  $(date +%Y%m%d.%H%M%S)" >> /var/tmp/log
+        (
+            > /dev/uhid
+            /bin/sleep .5
+            while [[ $(/usr/bin/stat -c%a /dev/uhid) != 666 ]]; do
+                /bin/chmod 0666 /dev/uhid
+                > /dev/uhid
+                /bin/sleep .5
+            done
+        )
+        echo "finish $(date +%Y%m%d.%H%M%S)" >> /var/tmp/log
         exit 0
         ;;
     stop)
