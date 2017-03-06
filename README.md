@@ -3,8 +3,8 @@
 This project is still in its pre-alpha stage.  Serious refactoring and
 documentations are needed.
 
-Currently v2f.py only supports Linux.  In fact, I have only tested the code with
-Google Chrome inside a 64-bit Ubuntu 16.04 desktop environment.
+Currently v2f.py only supports Linux and Python 3.5+.  The code was tested
+using Google Chrome inside a 64-bit Ubuntu 16.04 desktop environment.
 
 
 
