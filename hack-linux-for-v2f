@@ -4,23 +4,21 @@ set -e
 
 
 #
-# we want 0666 for both /dev/uhid and /dev/hidraw*
+# I'd like to have 0666 permission for both /dev/uhid and /dev/hidraw*
 #
 
-printf %s 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"
-' > /etc/udev/rules.d/00-expose-hidraw.rules
+tee /etc/udev/rules.d/00-expose-hidraw.rules > /dev/null <<< 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666"'
+tee /etc/udev/rules.d/00-expose-uhid.rules > /dev/null <<< 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"'
 
-printf %s 'KERNEL=="uhid", SUBSYSTEM=="misc", MODE="0666"
-' > /etc/udev/rules.d/00-expose-uhid.rules
+test ! -e /etc/rc.local || /bin/mv /etc/rc.local /etc/rc.local.backup."$(/bin/date +%Y%m%d%H%M%S)"
 
-test ! -e /etc/rc.local ||
-  /bin/mv /etc/rc.local /etc/rc.local.backup."$(/bin/date +%Y%m%d%H%M%S)"
 
-printf %s '#!/bin/bash
-> /dev/uhid
+tee /etc/rc.local > /dev/null << 'END'
+#!/bin/bash
+/bin/udevadm trigger
+/bin/dd if=/dev/null of=/dev/uhid
 exit 0
-' > /etc/rc.local
-
+END
 /bin/chmod +x /etc/rc.local
 
 
@@ -29,7 +27,5 @@ exit 0
 #
 
 /bin/udevadm trigger
-
-> /dev/uhid
-
+/bin/dd if=/dev/null of=/dev/uhid
 /bin/chmod 0666 /dev/uhid
