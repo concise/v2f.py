@@ -101,7 +101,7 @@ def uhid_generate_create2_event():
     phys = b''
     uniq = b''
     rd_size = len(U2FHID_REPORT_DESCRIPTOR)
-    bus = 0
+    bus = 6
     vendor = 0x0000
     product = 0x0000
     version = 0
@@ -285,6 +285,7 @@ def _send_response_message(cid, cmd, payload):
     _sendout_response_packet(octets)
 
     for seq in range(128):
+        time.sleep(0.25)
         if len(payload) == 0:
             break
         octets = struct.pack(CONT_PACKET_FMT, cid, seq, payload)

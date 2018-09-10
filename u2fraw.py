@@ -106,10 +106,10 @@ and it is claiming itself to be APPID with SHA256(APPID) =
     if not user_says_yes('Enter yes to register'):
         return SW_CONDITIONS_NOT_SATISFIED, b''
 
-    print()
-    print('Please return to the web page in 3 seconds NOW!')
-    print()
-    time.sleep(3)
+    #print()
+    #print('Please return to the web page in 3 seconds NOW!')
+    #print()
+    #time.sleep(3)
 
     kh = _generate_new_key_handle(application_parameter)
     sk, pk = _get_key_pair(application_parameter, kh)
@@ -120,18 +120,23 @@ and it is claiming itself to be APPID with SHA256(APPID) =
         kh,
         pk,
     ])
-    signature = u2fcrypto.generate_sha256_p256ecdsa_signature(sk, data_to_sign)
 
-    #print('pk =', pk.hex())
-    #print('data_to_sign =', data_to_sign.hex())
-    #print('signature =', signature.hex())
 
+    ATTESTATION_PRIVATE_KEY = bytes.fromhex('0b763f3769433f4054ef9b3fe00b53d78e8e2978e1241088891dd574cb6e570b')
+    ATTESTATION_CERTIFICATE = bytes.fromhex('308201113081b8020100300906072a8648ce3d040130193117301506035504030c0e696e7465726d6564696174656361301e170d3138303931303035323635395a170d3138313130393035323635395a30123110300e06035504030c07753266746573743059301306072a8648ce3d020106082a8648ce3d030107034200048e080a5b8623b45a3263f1fc17fc134e84c4b1bd2928bda79f3e8f1e0526b58b6406c613b596e3aa04044738b21295b35e3aa5e44a4a250cd6f17c3f3b3fd876300906072a8648ce3d040103490030460221008c9eba2846d6be62b617526c3f2ce3e37bec36cc88a8d640e2d6544020795cd2022100c8e8f28dcf93f2963b506a661e52e8592771d12d930d2b6470c4f601223478a7')
+
+
+
+    # attestation signature
+    #signature = u2fcrypto.generate_sha256_p256ecdsa_signature(sk, data_to_sign)
+    signature = u2fcrypto.generate_sha256_p256ecdsa_signature(ATTESTATION_PRIVATE_KEY, data_to_sign)
     result = b''.join([
         b'\x05',
         pk,
         b'\x40',
         kh,
-        u2fcrypto.x509encode_p256ecdsa_publickey(pk),
+        #u2fcrypto.x509encode_p256ecdsa_publickey(pk),
+        (ATTESTATION_CERTIFICATE),
         signature,
     ])
     return SW_NO_ERROR, result
